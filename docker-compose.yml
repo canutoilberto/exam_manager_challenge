@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    command: uvicorn exam_manager.asgi:application --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - elasticsearch
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+  celery:
+    build: .
+    command: celery -A exam_manager worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
