@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.provas",
+    "django_celery_beat",
+    "django_elasticsearch_dsl",
 ]
 
 # Configurações para o Celery
