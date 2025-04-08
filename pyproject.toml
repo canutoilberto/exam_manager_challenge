@@ -6,11 +6,12 @@ authors = [
     {name = "canutoilberto",email = "canutoilberto@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10,<4.0"
 dependencies = [
-    "django (>=5.2,<6.0)",
+    "django (>=5.0,<5.1)",
     "django-ninja (>=1.4.0,<2.0.0)",
     "celery (>=5.5.0,<6.0.0)",
+    "django-celery-beat (>=2.5.0,<3.0.0)",
     "django-elasticsearch-dsl (>=8.0,<9.0)",
     "redis (>=5.2.1,<6.0.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
