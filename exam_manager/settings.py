@@ -55,6 +55,15 @@ CACHES = {
     }
 }
 
+# Configurações do Elasticsearch
+ELASTICSEARCH_DSL = {"default": {"hosts": "elasticsearch:9200"}}
+
+# Nome do índice base para o Elasticsearch
+ELASTICSEARCH_INDEX_NAMES = {
+    "apps.provas.documents.ProvaDocument": "provas",
+    "apps.provas.documents.QuestaoDocument": "questoes",
+}
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
