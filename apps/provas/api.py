@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
 from ninja import NinjaAPI, Router, Query, Schema
-from typing import List
+from typing import List, Type, TypeVar, Generic
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from apps.provas import models, schemas, tasks
+from django.db.models import Model
 
 
 api = NinjaAPI()
@@ -13,6 +14,8 @@ api = NinjaAPI()
 import jwt
 from django.conf import settings
 from ninja.security import HttpBearer
+
+T = TypeVar("T", bound=Model)
 
 
 class JWTBearer(HttpBearer):
@@ -30,74 +33,105 @@ class JWTBearer(HttpBearer):
 
 auth = JWTBearer()
 
-# CRUD para Provas
+
+class BaseCRUDRouter(Generic[T]):
+    """Classe base para operações CRUD"""
+
+    def __init__(
+        self,
+        model: Type[T],
+        schema_in: Type[Schema],
+        schema_out: Type[Schema],
+        router: Router,
+        search_field: str = "titulo",
+    ):
+        self.model = model
+        self.schema_in = schema_in
+        self.schema_out = schema_out
+        self.router = router
+        self.search_field = search_field
+        self._register_routes()
+
+    def _register_routes(self):
+        @self.router.get("/", response=List[self.schema_out])
+        @method_decorator(cache_page(60), name="dispatch")
+        def list_items(
+            request,
+            search: str = Query("", description=f"Buscar por {self.search_field}"),
+            ordering: str = Query("id"),
+            page: int = Query(1),
+            page_size: int = Query(10),
+        ):
+            qs = self.model.objects.all()
+            if search and hasattr(self.model, self.search_field):
+                qs = qs.filter(**{f"{self.search_field}__icontains": search})
+            qs = qs.order_by(ordering)
+            paginator = Paginator(qs, page_size)
+            items = paginator.get_page(page)
+            return list(items)
+
+        @self.router.post("/", response=self.schema_out, auth=auth)
+        def create_item(request, payload: self.schema_in):
+            item = self.model.objects.create(**payload.dict())
+            return item
+
+        @self.router.get("/{item_id}", response=self.schema_out)
+        def get_item(request, item_id: int):
+            item = get_object_or_404(self.model, id=item_id)
+            return item
+
+        @self.router.put("/{item_id}", response=self.schema_out, auth=auth)
+        def update_item(request, item_id: int, payload: self.schema_in):
+            item = get_object_or_404(self.model, id=item_id)
+            for attr, value in payload.dict().items():
+                setattr(item, attr, value)
+            item.save()
+            return item
+
+        @self.router.delete("/{item_id}", auth=auth)
+        def delete_item(request, item_id: int):
+            item = get_object_or_404(self.model, id=item_id)
+            item.delete()
+            return {"success": True}
+
+
+# Instanciando routers
 prova_router = Router()
+questao_router = Router()
+escolha_router = Router()
+inscricao_router = Router()
 
+# Registrando CRUDs
+prova_crud = BaseCRUDRouter(
+    model=models.Prova,
+    schema_in=schemas.ProvaIn,
+    schema_out=schemas.ProvaOut,
+    router=prova_router,
+    search_field="titulo",
+)
 
-@prova_router.get("/", response=List[schemas.ProvaOut])
-@method_decorator(cache_page(60), name="dispatch")
-def list_provas(
-    request,
-    search: str = Query("", description="Buscar por título"),
-    ordering: str = Query("id"),
-    page: int = Query(1),
-    page_size: int = Query(10),
-):
-    """
-    Listar provas
-    """
-    qs = models.Prova.objects.all()
-    if search:
-        qs = qs.filter(titulo__icontains=search)
-    qs = qs.order_by(ordering)
-    paginator = Paginator(qs, page_size)
-    provas = paginator.get_page(page)
-    return list(provas)
+questao_crud = BaseCRUDRouter(
+    model=models.Questao,
+    schema_in=schemas.QuestaoIn,
+    schema_out=schemas.QuestaoOut,
+    router=questao_router,
+    search_field="enunciado",
+)
 
+escolha_crud = BaseCRUDRouter(
+    model=models.Escolha,
+    schema_in=schemas.EscolhaIn,
+    schema_out=schemas.EscolhaOut,
+    router=escolha_router,
+    search_field="texto",
+)
 
-@prova_router.post("/", response=schemas.ProvaOut, auth=auth)
-def create_prova(request, payload: schemas.ProvaIn):
-    """
-    Criar prova
-    """
-    prova = models.Prova.objects.create(**payload.dict())
-    return prova
-
-
-@prova_router.get("/{prova_id}", response=schemas.ProvaOut)
-def get_prova(request, prova_id: int):
-    """
-    Obter prova por ID
-    """
-    prova = get_object_or_404(models.Prova, id=prova_id)
-    return prova
-
-
-@prova_router.put("/{prova_id}", response=schemas.ProvaOut, auth=auth)
-def update_prova(request, prova_id: int, payload: schemas.ProvaIn):
-    """
-    Atualiza prova por ID
-    """
-    prova = get_object_or_404(models.Prova, id=prova_id)
-    for attr, value in payload.dict().items():
-        setattr(prova, attr, value)
-    prova.save()
-    return prova
-
-
-@prova_router.delete("/{prova_id}", auth=auth)
-def delete_prova(request, prova_id: int):
-    """
-    Deleta prova
-    """
-    prova = get_object_or_404(models.Prova, id=prova_id)
-    prova.delete()
-    return {"success": True}
-
-
-# TODO: Registre outros routers para Questao, Escolha, Inscricao e Resposta seguindo o mesmo padrão.
-# TODO: Em especial, nos endpoints de Resposta, verifique se o usuário autenticado (obtido via JWTBearer)
-# TODO: é o dono da inscrição, garantindo o controle de acesso.
+inscricao_crud = BaseCRUDRouter(
+    model=models.Inscricao,
+    schema_in=schemas.InscricaoIn,
+    schema_out=schemas.InscricaoOut,
+    router=inscricao_router,
+)
 
 
 # Endpoint para envio de respostas com disparo de job de correção
@@ -120,7 +154,8 @@ def submit_resposta(request, payload: schemas.RespostaIn):
     return resposta
 
 
-# Registro da rota de provas
+# Registro das rotas
 api.add_router("/provas/", prova_router)
-
-# TODO: Verifica se o usuário autenticado é o dono da inscrição
+api.add_router("/questoes/", questao_router)
+api.add_router("/escolhas/", escolha_router)
+api.add_router("/inscricoes/", inscricao_router)

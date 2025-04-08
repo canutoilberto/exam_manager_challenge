@@ -8,6 +8,15 @@ ROLE_CHOICES = (
 )
 
 
+class TimestampedModel(models.Model):
+    """Classe base para modelos que precisam de timestamp de criação"""
+
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
 class User(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="PARTICIPANTE")
 
@@ -15,10 +24,9 @@ class User(AbstractUser):
         return self.username
 
 
-class Prova(models.Model):
+class Prova(TimestampedModel):
     titulo = models.CharField(max_length=200)
     descricao = models.TextField(blank=True)
-    data_criacao = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.titulo
@@ -43,12 +51,11 @@ class Escolha(models.Model):
         return f"Escolha {self.id} para {self.questao.id}"
 
 
-class Inscricao(models.Model):
+class Inscricao(TimestampedModel):
     participante = models.ForeignKey(
         User, limit_choices_to={"role": "PARTICIPANTE"}, on_delete=models.CASCADE
     )
     prova = models.ForeignKey(Prova, on_delete=models.CASCADE)
-    data_inscricao = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = (("participante", "prova"),)
@@ -57,13 +64,12 @@ class Inscricao(models.Model):
         return f"{self.participante.username} - {self.prova.titulo}"
 
 
-class Resposta(models.Model):
+class Resposta(TimestampedModel):
     inscricao = models.ForeignKey(
         Inscricao, related_name="respostas", on_delete=models.CASCADE
     )
     questao = models.ForeignKey(Questao, on_delete=models.CASCADE)
     escolha = models.ForeignKey(Escolha, on_delete=models.CASCADE)
-    data_resposta = models.DateTimeField(auto_now_add=True)
     corrigida = models.BooleanField(default=False)
     correta = models.BooleanField(null=True)  # Será definida após correção
 
