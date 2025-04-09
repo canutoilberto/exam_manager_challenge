@@ -53,8 +53,11 @@ class BaseCRUDRouter(Generic[T]):
         self._register_routes()
 
     def _register_routes(self):
-        @self.router.get("/", response=List[self.schema_out])
-        @method_decorator(cache_page(60), name="dispatch")
+        @self.router.get(
+            "/",
+            response=List[self.schema_out],
+            operation_id=f"{self.model.__name__.lower()}_list",
+        )
         def list_items(
             request,
             search: str = Query("", description=f"Buscar por {self.search_field}"),
@@ -70,17 +73,31 @@ class BaseCRUDRouter(Generic[T]):
             items = paginator.get_page(page)
             return list(items)
 
-        @self.router.post("/", response=self.schema_out, auth=auth)
+        @self.router.post(
+            "/",
+            response=self.schema_out,
+            auth=auth,
+            operation_id=f"{self.model.__name__.lower()}_create",
+        )
         def create_item(request, payload: self.schema_in):
             item = self.model.objects.create(**payload.dict())
             return item
 
-        @self.router.get("/{item_id}", response=self.schema_out)
+        @self.router.get(
+            "/{item_id}",
+            response=self.schema_out,
+            operation_id=f"{self.model.__name__.lower()}_get",
+        )
         def get_item(request, item_id: int):
             item = get_object_or_404(self.model, id=item_id)
             return item
 
-        @self.router.put("/{item_id}", response=self.schema_out, auth=auth)
+        @self.router.put(
+            "/{item_id}",
+            response=self.schema_out,
+            auth=auth,
+            operation_id=f"{self.model.__name__.lower()}_update",
+        )
         def update_item(request, item_id: int, payload: self.schema_in):
             item = get_object_or_404(self.model, id=item_id)
             for attr, value in payload.dict().items():
@@ -88,7 +105,11 @@ class BaseCRUDRouter(Generic[T]):
             item.save()
             return item
 
-        @self.router.delete("/{item_id}", auth=auth)
+        @self.router.delete(
+            "/{item_id}",
+            auth=auth,
+            operation_id=f"{self.model.__name__.lower()}_delete",
+        )
         def delete_item(request, item_id: int):
             item = get_object_or_404(self.model, id=item_id)
             item.delete()
