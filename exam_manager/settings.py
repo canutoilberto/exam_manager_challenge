@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-hjth**^ur&$wa&&obllww#pvf+ckqs4%=jh2p#$vvu*%g5obz6"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure-hjth**^ur&$wa&&obllww#pvf+ckqs4%=jh2p#$vvu*%g5obz6"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 
 # Application definition
@@ -43,20 +46,22 @@ INSTALLED_APPS = [
 ]
 
 # Configurações para o Celery
-CELERY_BROKER_URL = "redis://redis:6379/0"
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
 
 # Configurações de Cache (exemplo usando Redis)
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
+        "LOCATION": os.environ.get("REDIS_CACHE_URL", "redis://redis:6379/1"),
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
 
 # Configurações do Elasticsearch
-ELASTICSEARCH_DSL = {"default": {"hosts": "elasticsearch:9200"}}
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": os.environ.get("ELASTICSEARCH_URL", "elasticsearch:9200")}
+}
 
 # Nome do índice base para o Elasticsearch
 ELASTICSEARCH_INDEX_NAMES = {
@@ -97,12 +102,19 @@ WSGI_APPLICATION = "exam_manager.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Configuração padrão com SQLite
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# Suporte para configuração com DATABASE_URL
+if "DATABASE_URL" in os.environ:
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(conn_max_age=600)
 
 
 # Password validation
@@ -129,9 +141,9 @@ AUTH_USER_MODEL = "provas.User"
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-br"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 

@@ -52,3 +52,273 @@ logs
 # Temporary files
 tmp/
 temp/
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+ENV/
+.env/
+
+# Arquivos de ambiente e configurações sensíveis
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Arquivos Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Arquivos de distribuição / pacotes
+dist/
+build/
+*.egg-info/
+*.egg
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+node_modules/
+.pnp/
+.pnp.js
+
+# Logs e arquivos temporários
+*.log
+logs/
+tmp/
+temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.*
+
+# Diretório estático e mídia para desenvolvimento
+/static/
+/staticfiles/
+/media/
+
+# Banco de dados SQLite
+*.sqlite3
+*.db
+
+# Elasticsearch
+.elasticbeanstalk/
+.elasticsearch/
+
+# Django migrations
+# Normalmente não ignoramos as migrations, 
+# descomente as linhas abaixo se for necessário no seu caso específico
+#migrations/
+#!migrations/__init__.py
+
+# Arquivos de teste e cobertura
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+/coverage
+
+# Documentação e relatórios
+docs/_build/
+docs/build/
+site/
+.buildinfo
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.AppleDouble
+.LSOverride
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+.metadata
+*.bak
+*.code-workspace
+
+# Docker
+.docker/
+
+# Diversos
+.npm
+.eslintcache
+.stylelintcache
+.cache
+*.tgz
+Thumbs.db
+.directory
+.Trash-*
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pypackages__/
+.ipynb_checkpoints
+
+# Arquivos sensíveis e ambientes virtuais
+# ====================================
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+env/
+ENV/
+.env/
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Django específico
+# ================
+*.sqlite3
+*.db
+/static/
+/staticfiles/
+/media/
+local_settings.py
+db.sqlite3-journal
+
+# Arquivo com credenciais ou tokens
+# ================================
+*credentials*
+*credential*
+*tokens*
+*token*
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*secret*
+*password*
+*passwd*
+*pwd*
+!example_*
+
+# Celery e Tarefas
+# ================
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.*
+celery.log
+
+# Logs e temporários
+# =================
+*.log
+logs/
+log/
+tmp/
+temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pacotes, distribuição e dependências
+# ===================================
+node_modules/
+.pnp/
+.pnp.js
+dist/
+build/
+*.egg-info/
+*.egg
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+
+# Testes e cobertura
+# =================
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+/coverage
+
+# IDEs, editores e arquivos do sistema
+# ===================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.AppleDouble
+.LSOverride
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+.metadata
+*.bak
+*.code-workspace
+Thumbs.db
+.directory
+.Trash-*
+
+# Services, CI/CD e Docker
+# ======================
+.docker/
+.elasticbeanstalk/
+.elasticsearch/
+.github/workflows/*.yml.secret
+
+# Cache e outros
+# =============
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pypackages__/
+.ipynb_checkpoints
+.npm
+.eslintcache
+.stylelintcache
+.cache
+*.tgz
+
+# Documentação
+# ==========
+docs/_build/
+docs/build/
+site/
+.buildinfo
